@@ -22,6 +22,4 @@ Try checking logs with `kubectl logs <pod>` or verifying your image locally.
 - Suggest Helm chart or resource configuration improvements.
 
 
-=== requirements.txt ===
 
-argparse
