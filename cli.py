@@ -11,20 +11,36 @@ import sys
 def list_models():
     """List all Ollama models available on the system."""
     try:
-        result = subprocess.run(["ollama", "list"], capture_output=True, text=True, check=True)
+        # Use UTF-8 to handle all Unicode characters (e.g., emojis, special symbols)
+        result = subprocess.run(
+            ["ollama", "list"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=True
+        )
         print("Available Ollama Models:\n")
         print(result.stdout)
     except FileNotFoundError:
         print("❌ Ollama not found. Please install Ollama from https://ollama.com/ first.")
     except subprocess.CalledProcessError as e:
         print("⚠️  Error listing models:", e.stderr)
+    except Exception as e:
+        print("❗ Unexpected error:", str(e))
+
 
 def run_model(model_name: str, prompt: str):
     """Run a selected model with a given prompt."""
     try:
         print(f"🧠 Running model '{model_name}' with prompt:\n{prompt}\n")
-        result = subprocess.run(["ollama", "run", model_name, prompt],
-                                capture_output=True, text=True, check=True)
+        # Added encoding="utf-8" for Windows compatibility
+        result = subprocess.run(
+            ["ollama", "run", model_name, prompt],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=True
+        )
         print("🤖 Model Response:\n")
         print(result.stdout)
     except FileNotFoundError:
@@ -33,6 +49,7 @@ def run_model(model_name: str, prompt: str):
         print("⚠️  Error running model:", e.stderr)
     except Exception as e:
         print("❗ Unexpected error:", str(e))
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -57,6 +74,7 @@ def main():
         run_model(args.model, args.prompt)
     else:
         parser.print_help()
+
 
 if __name__ == "__main__":
     main()
