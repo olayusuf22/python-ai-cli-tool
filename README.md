@@ -33,8 +33,8 @@ This project fulfills the requirements of the **Python AI CLI Tool Assignment**,
   ```bash
   pip install -r requirements.txt
 
+### HOW TO TEST #######
 
-.........How to test.......
 cd python-ai-cli-tool
 pip install -r requirements.txt
 python cli.py list
