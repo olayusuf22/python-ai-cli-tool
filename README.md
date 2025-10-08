@@ -35,7 +35,7 @@ This project fulfills the requirements of the **Python AI CLI Tool Assignment**,
 
 ### HOW TO TEST #######
 
-cd python-ai-cli-tool
-pip install -r requirements.txt
-python cli.py list
-python cli.py run llama3 "Explain Macmillan Learning in one sentence"
+- cd python-ai-cli-tool
+- pip install -r requirements.txt
+- python cli.py list
+- python cli.py run llama3 "Explain Macmillan Learning in one sentence"
