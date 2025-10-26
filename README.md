@@ -35,7 +35,19 @@ This project fulfills the requirements of the **Python AI CLI Tool Assignment**,
 
 ### HOW TO TEST #######
 
-- cd python-ai-cli-tool
-- pip install -r requirements.txt
-- python cli.py list
-- python cli.py run llama3 "Explain Macmillan Learning in one sentence"
+# Move into the project directory
+cd python-ai-cli-tool
+
+# Install dependencies
+pip install -r requirements.txt
+
+# List available Ollama models
+python cli.py list
+
+# Run a model (Option 1 - with flags)
+python cli.py run --model llama3 --prompt "Explain Macmillan Learning in one sentence"
+
+# Or (Option 2 - interactive mode)
+python cli.py run
+Enter model name: llama3
+Enter your prompt: Explain Macmillan Learning in one sentence
