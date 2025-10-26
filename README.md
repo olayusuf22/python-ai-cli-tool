@@ -44,7 +44,7 @@ pip install -r requirements.txt
 # List available Ollama models
 python cli.py list
 
-# Run a model (Option 1 - with flags)
+# Run a model (Option 1 )
 python cli.py run --model llama3 --prompt "Explain Macmillan Learning in one sentence"
 
 # Or (Option 2 - interactive mode)
