@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-Python AI CLI Tool (PowerShell-Safe Enhanced Version)
-Supports both flag and positional arguments, adds colorized output,
-and prevents PowerShell from misinterpreting model responses as commands.
+Python AI CLI Tool (Auto-Recovery Enhanced Version)
+Detects memory-related Ollama errors and automatically retries in CPU mode.
 """
 
 import click
@@ -10,6 +9,7 @@ import subprocess
 import requests
 import json
 import sys
+import os
 
 OLLAMA_API = "http://localhost:11434/api"
 
@@ -45,31 +45,24 @@ def list():
 def run(model, prompt, model_opt, prompt_opt):
     """
     Run a specific model with a user prompt and display clean text output.
-
-    Examples:
-      python cli.py run llama3 "Explain Macmillan Learning"
-      python cli.py run --model llama3 --prompt "Explain Macmillan Learning"
+    Automatically retries in CPU mode if memory errors occur.
     """
-    # Determine values from either positional or option args
     model_name = model_opt or model
     user_prompt = prompt_opt or " ".join(prompt)
 
-    # If missing, ask interactively
     if not model_name:
         model_name = click.prompt("Enter model name", type=str)
     if not user_prompt:
         user_prompt = click.prompt("Enter your prompt", type=str)
 
-    try:
-        click.secho(f"\n🧠 Running model '{model_name}' with prompt:\n{user_prompt}\n", fg="yellow")
+    click.secho(f"\n🧠 Running model '{model_name}' with prompt:\n{user_prompt}\n", fg="yellow")
 
+    try:
         payload = {"model": model_name, "prompt": user_prompt}
         response = requests.post(f"{OLLAMA_API}/generate", json=payload, stream=True)
 
         if response.status_code == 200:
             click.secho("🤖 Model Response:\n", fg="cyan", bold=True)
-
-            # Collect clean text only
             full_text = ""
             for line in response.iter_lines():
                 if not line:
@@ -80,11 +73,39 @@ def run(model, prompt, model_opt, prompt_opt):
                         full_text += data["response"]
                 except Exception:
                     continue
-
-            # Display safely with spacing so PowerShell won't misinterpret
             click.secho("\n" + full_text.strip() + "\n", fg="green")
+
         else:
-            click.secho(f"⚠️  Error: {response.status_code} - {response.text}", fg="yellow")
+            error_text = response.text
+            if "model requires more system memory" in error_text:
+                click.secho(
+                    "⚠️  The model requires more memory than available. "
+                    "Retrying in CPU mode...\n", fg="yellow"
+                )
+                os.environ["OLLAMA_NO_GPU"] = "1"
+                retry_payload = {"model": model_name, "prompt": user_prompt}
+                retry = requests.post(f"{OLLAMA_API}/generate", json=retry_payload, stream=True)
+
+                if retry.status_code == 200:
+                    click.secho("🤖 Model Response (CPU Mode):\n", fg="cyan", bold=True)
+                    full_text = ""
+                    for line in retry.iter_lines():
+                        if not line:
+                            continue
+                        try:
+                            data = json.loads(line.decode("utf-8"))
+                            if "response" in data:
+                                full_text += data["response"]
+                        except Exception:
+                            continue
+                    click.secho("\n" + full_text.strip() + "\n", fg="green")
+                else:
+                    click.secho(
+                        "❌ CPU mode also failed. Try using a smaller model like 'mistral' or 'llama2'.",
+                        fg="red"
+                    )
+            else:
+                click.secho(f"⚠️  Error: {response.status_code} - {response.text}", fg="yellow")
 
     except requests.exceptions.ConnectionError:
         click.secho("❌ Could not connect to Ollama. Please make sure it's running locally.", fg="red")
